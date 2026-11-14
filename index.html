@@ -110,6 +110,9 @@ body {
 		</div>
 
 		<script src="index.js"></script>
+		<!-- Общий аккаунт для всех моих сайтов: сохранение игры в облаке (mm-account.js, mm-korovy.js) -->
+		<script src="mm-account.js"></script>
+		<script src="mm-korovy.js"></script>
 		<script>
 const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":54381232,"index.wasm":43699190},"focusCanvas":true,"gdextensionLibs":[]};
 const GODOT_THREADS_ENABLED = false;
@@ -199,7 +202,8 @@ const engine = new Engine(GODOT_CONFIG);
 		}
 	} else {
 		setStatusMode('progress');
-		engine.startGame({
+		// Сначала подтягиваем сохранение из аккаунта (не дольше 4 секунд), потом запускаем игру
+		(window.MMAccount ? MMAccount.whenReady(4000) : Promise.resolve()).then(() => engine.startGame({
 			'onProgress': function (current, total) {
 				if (current > 0 && total > 0) {
 					statusProgress.value = current;
@@ -209,8 +213,9 @@ const engine = new Engine(GODOT_CONFIG);
 					statusProgress.removeAttribute('max');
 				}
 			},
-		}).then(() => {
+		})).then(() => {
 			setStatusMode('hidden');
+			window.MM_GAME_STARTED = true;
 		}, displayFailureNotice);
 	}
 }());
